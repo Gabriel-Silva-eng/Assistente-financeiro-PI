@@ -42,8 +42,7 @@ def excluir_transacao(id_transacao):
     conn = conectar()
     cursor = conn.cursor()
     
-    # ATENÇÃO: O comando DELETE sem a cláusula WHERE apaga o banco inteiro.
-    # O WHERE id = ? garante que apenas uma linha sofra as consequências.
+
     cursor.execute('''
         DELETE FROM transacoes WHERE id = ?
     ''', (id_transacao,))
