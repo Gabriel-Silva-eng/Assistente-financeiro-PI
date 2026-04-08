@@ -15,7 +15,7 @@ st.markdown("""
 st.title("📊 Painel Financeiro Corporativo")
 st.markdown("---")
 
-database.criar_tabela()
+database.criar_tabelas()
 
 df = database.buscar_transacoes()
 
