@@ -4,10 +4,9 @@ import plotly.express as px
 import database
 from datetime import date
 
-# Configuração corporativa da página (Agora com a barra lateral expandida por padrão)
+# Configuração corporativa da página
 st.set_page_config(page_title="ERP - Gestão Financeira", layout="wide", initial_sidebar_state="expanded")
 
-# Proteção contra o navegador tentando traduzir a página
 st.markdown("""
     <meta name="google" content="notranslate">
     <meta http-equiv="Content-Language" content="pt-br">
@@ -16,27 +15,25 @@ st.markdown("""
 st.title("📊 Painel Financeiro Corporativo")
 st.markdown("---")
 
-# Precisamos buscar os dados ANTES de desenhar a interface, para os filtros funcionarem
 df = database.buscar_transacoes()
 
 # ==========================================
-# NOVIDADE 1 e 2: MENU LATERAL (FILTROS E EXPORTAÇÃO)
+# MENU LATERAL (FILTROS E EXPORTAÇÃO)
 # ==========================================
 with st.sidebar:
     st.header("🎛️ Filtros de Análise")
     
     if not df.empty:
-        # Convertendo a data para o formato DateTime do Pandas (permite extrair mês e ano)
+
         df['data'] = pd.to_datetime(df['data'])
         
-        # Filtros Dinâmicos baseados no que existe no banco
+        # Filtros Dinâmicos 
         anos = df['data'].dt.year.unique().tolist()
         ano_selecionado = st.selectbox("Filtrar por Ano", ["Todos os Anos"] + anos)
         
         meses = df['data'].dt.month.unique().tolist()
         mes_selecionado = st.selectbox("Filtrar por Mês", ["Todos os Meses"] + meses)
         
-        # Aplicando a tesoura: cortando a tabela baseada no que o chefe escolheu
         if ano_selecionado != "Todos os Anos":
             df = df[df['data'].dt.year == ano_selecionado]
         if mes_selecionado != "Todos os Meses":
@@ -45,7 +42,7 @@ with st.sidebar:
         st.markdown("---")
         st.subheader("📥 Exportação")
         
-        # Transformando nosso DataFrame filtrado em um arquivo legível para Excel
+        # Transformando DataFrame em um arquivo para Excel
         csv = df.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="Baixar Relatório (CSV)",
@@ -84,7 +81,7 @@ with col1:
                 else:
                     database.inserir_transacao(tipo, categoria, descricao, valor_final, data_transacao)
                     st.success("Registro efetuado com sucesso!")
-                    # Recarrega a página automaticamente para o novo dado aparecer nos gráficos
+
                     st.rerun() 
             except ValueError:
                 st.error("Formato inválido. Digite apenas números e vírgula. Ex: 1500,50")
@@ -102,7 +99,7 @@ with col2:
         kpi2.metric("Total de Despesas", f"R$ {total_despesas:,.2f}".replace(',', '_').replace('.', ',').replace('_', '.'))
         
         # ==========================================
-        # NOVIDADE 3: INDICADOR VISUAL DE SAÚDE (Semáforo)
+        # INDICADOR VISUAL DE SAÚDE (Semáforo)
         # ==========================================
         cor_saldo = "🟢" if saldo_caixa >= 0 else "🔴"
         kpi3.metric("Saldo em Caixa", f"{cor_saldo} R$ {saldo_caixa:,.2f}".replace(',', '_').replace('.', ',').replace('_', '.'))
@@ -126,7 +123,7 @@ with col2:
 
         st.subheader("Histórico de Transações")
         
-        # Convertendo a data de volta para o padrão brasileiro DD/MM/AAAA para a tabela ficar bonita
+        # Convertendo a data para o padrão brasileiro DD/MM/AAAA
         df_display = df.copy()
         df_display['data'] = df_display['data'].dt.strftime('%d/%m/%Y')
         df_display.columns = ['ID', 'Tipo', 'Categoria', 'Descrição', 'Valor (R$)', 'Data']
