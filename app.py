@@ -25,13 +25,23 @@ if st.session_state['usuario_logado'] is None:
         
         if st.button("Entrar", key="btn_login"):
             # Dicionário de usuários provisório (No futuro, isso pode ir para o banco)
-            usuarios_permitidos = {"gabriel": "admin123", "joao": "senha1"}
+            usuarios_permitidos = {"Gabriel": "admin123", "joao": "senha1"}
             
             if usuario_input in usuarios_permitidos and usuarios_permitidos[usuario_input] == senha_input:
                 st.session_state['usuario_logado'] = usuario_input
                 st.rerun() # Destranca a porta e recarrega a página
             else:
                 st.error("⚠️ Usuário ou senha incorretos.")
+                
+    # --- BOTÃO NUCLEAR TEMPORÁRIO ---
+        st.markdown("---")
+        if st.button("🚨 RESETAR BANCO DE DADOS DA NUVEM"):
+            import os
+            if os.path.exists('financas.db'):
+                os.remove('financas.db')
+                st.success("💥 Banco antigo destruído! Dê F5 na página para recriar o novo.")
+            else:
+                st.info("O banco já não existe mais aqui.")
 
 # --- 3. O SISTEMA (ESCRITÓRIO INTERNO) ---
 else:
