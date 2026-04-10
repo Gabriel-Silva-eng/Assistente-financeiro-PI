@@ -12,8 +12,31 @@ st.markdown("""
     <meta http-equiv="Content-Language" content="pt-br">
 """, unsafe_allow_html=True)
 
-st.title("📊 Painel Financeiro Corporativo")
+st.title("Finança Fácil - Assistente Financeiro")
 st.markdown("---")
+
+# --- INICIALIZAÇÃO E ALERTAS ---
+database.criar_tabela_lembretes()
+lembretes_df = database.buscar_lembretes()
+
+if not lembretes_df.empty:
+    # Convertendo a data para cálculo
+    lembretes_df['data_vencimento'] = pd.to_datetime(lembretes_df['data_vencimento']).dt.date
+    hoje = date.today()
+    
+    alertas = []
+    for _, row in lembretes_df.iterrows():
+        dias_para_vencer = (row['data_vencimento'] - hoje).days
+        
+        #  Notificação:
+        if dias_para_vencer < 0:
+            alertas.append(f"🚨 **ATRASADO:** {row['titulo']} venceu há {abs(dias_para_vencer)} dias!")
+        elif 0 <= dias_para_vencer <= 3:
+            alertas.append(f"⚠️ **URGENTE:** {row['titulo']} vence em {dias_para_vencer} dias!")
+
+    # alertas
+    for alerta in alertas:
+        st.error(alerta) if "🚨" in alerta else st.warning(alerta)
 
 database.criar_tabelas()
 
@@ -23,7 +46,23 @@ df = database.buscar_transacoes()
 # MENU LATERAL (FILTROS E EXPORTAÇÃO)
 # ==========================================
 with st.sidebar:
-    st.header("🎛️ Filtros de Análise")
+    st.markdown("---")
+    st.subheader("📅 Agendar Pagamento/Recibo")
+    with st.expander("Novo Lembrete"):
+        titulo_l = st.text_input("O que pagar/receber?")
+        valor_l = st.number_input("Valor Estimado", min_value=0.0)
+        data_l = st.date_input("Data Limite", date.today())
+        if st.button("Agendar"):
+            database.inserir_lembrete(titulo_l, valor_l, data_l)
+            st.success("Agendado!")
+            st.rerun()
+
+    # Listagem rápida de lembretes no menu lateral
+    if not lembretes_df.empty:
+        st.markdown("**Próximos Compromissos:**")
+        for _, row in lembretes_df.head(5).iterrows():
+            st.caption(f"📌 {row['data_vencimento'].strftime('%d/%m')} - {row['titulo']}")
+        st.header("🎛️ Filtros de Análise")
     
     if not df.empty:
 
