@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import database
-from datetime import date
+from datetime import datetime, timedelta, timezone
+fuso_br = timezone(timedelta(hours=-3))
 
 # Configuração corporativa da página
 st.set_page_config(page_title="ERP - Gestão Financeira", layout="wide", initial_sidebar_state="expanded")
@@ -22,7 +23,7 @@ lembretes_df = database.buscar_lembretes()
 if not lembretes_df.empty:
     # Convertendo a data para cálculo
     lembretes_df['data_vencimento'] = pd.to_datetime(lembretes_df['data_vencimento']).dt.date
-    hoje = date.today()
+    hoje = datetime.now(fuso_br).date()
     
     alertas = []
     for _, row in lembretes_df.iterrows():
@@ -53,8 +54,21 @@ with st.sidebar:
     st.subheader("📅 Agendar Pagamento/Recibo")
     with st.expander("Novo Lembrete"):
         titulo_l = st.text_input("O que pagar/receber?")
-        valor_l = st.number_input("Valor Estimado", min_value=0.0)
-        data_l = st.date_input("Data Limite", date.today(), format="DD/MM/YYYY")
+        # Troca para text_input igual ao corpo principal
+        valor_texto = st.text_input("Valor Estimado", placeholder="Ex: 1.500,50")
+        data_l = st.date_input("Data Limite", datetime.now(fuso_br).date(), format="DD/MM/YYYY")
+        
+        if st.button("Agendar"):
+            try:
+                # limpa os pontos do BR e troca a vírgula para o banco de dados
+                valor_l = float(valor_texto.replace('.', '').replace(',', '.'))
+                database.inserir_lembrete(titulo_l, valor_l, data_l)
+                st.success("Agendado!")
+                st.rerun()
+            except ValueError:
+                # Trava de segurança se o usuário digitar letras
+                st.error("Por favor, digite um valor financeiro válido.")
+        data_l = st.date_input("Data Limite", datetime.now(fuso_br).date(), format="DD/MM/YYYY")
         if st.button("Agendar"):
             database.inserir_lembrete(titulo_l, valor_l, data_l)
             st.success("Agendado!")
@@ -72,8 +86,10 @@ with st.sidebar:
                 col_texto, col_pago, col_del = st.columns([0.65, 0.15, 0.20])
                 
                 with col_texto:
-                    st.write(f"**{data_formatada}**\n{row['titulo']} (R$ {row['valor']:.2f})")
-                    
+                    # Formata no padrão 1.234,56
+                    valor_br = f"{row['valor']:_.2f}".replace('.', ',').replace('_', '.')
+                    st.write(f"**{data_formatada}**\n{row['titulo']} (R$ {valor_br})")
+                            
                 with col_pago:
                     # O parâmetro 'key' usa o ID do banco de dados para ser único
                     if st.button("✔️", key=f"pagar_{row['id']}", help="Marcar como Pago (Move para o Caixa)"):
@@ -137,7 +153,7 @@ with col1:
         ])
         descricao = st.text_input("Descrição da Nota/Recibo")
         valor_str = st.text_input("Valor (R$)", placeholder="Ex: 1.500,50")
-        data_transacao = st.date_input("Data de Competência", date.today(), format="DD/MM/YYYY")
+        data_transacao = st.date_input("Data de Competência", datetime.now(fuso_br).date(), format="DD/MM/YYYY")
         
         submit = st.form_submit_button("Salvar Registro")
         
