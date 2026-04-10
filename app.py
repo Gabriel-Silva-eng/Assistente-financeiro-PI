@@ -68,7 +68,7 @@ with st.sidebar:
             except ValueError:
                 # Trava de segurança se o usuário digitar letras
                 st.error("Por favor, digite um valor financeiro válido.")
-        data_l = st.date_input("Data Limite", datetime.now(fuso_br).date(), format="DD/MM/YYYY")
+        data_l = st.date_input("Data Limite", datetime.now(fuso_br).date(), format="DD/MM/YYYY", key="input_data_limite_nova")
         if st.button("Agendar"):
             database.inserir_lembrete(titulo_l, valor_l, data_l)
             st.success("Agendado!")
@@ -153,7 +153,7 @@ with col1:
         ])
         descricao = st.text_input("Descrição da Nota/Recibo")
         valor_str = st.text_input("Valor (R$)", placeholder="Ex: 1.500,50")
-        data_transacao = st.date_input("Data de Competência", datetime.now(fuso_br).date(), format="DD/MM/YYYY")
+        data_transacao = st.date_input("Data de Competência", datetime.now(fuso_br).date(), format="DD/MM/YYYY", key="input_data_competencia")
         
         submit = st.form_submit_button("Salvar Registro")
         
