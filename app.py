@@ -159,7 +159,7 @@ else:
                 st.subheader("🎯 Definir Meta de Gasto")
                 with st.expander("Nova Meta Mensal"):
                     cat_meta = st.selectbox("Categoria", [
-                        "Folha de Pagamento", "Infraestrutura e TI", "Impostos e Taxas", 
+                        "Folha de Pagamento", "Adestramento", "Banho e tosa", 
                         "Marketing", "Vendas e Serviços", "Manutenção", "Outros"
                     ], key="meta_cat")
                     valor_meta_str = st.text_input("Limite Máximo (R$)", placeholder="Ex: 500,00", key="meta_val")
@@ -216,7 +216,7 @@ else:
         with st.form("form_transacao", clear_on_submit=True):
             tipo = st.selectbox("Tipo de Movimentação", ["Despesa", "Receita"])
             categoria = st.selectbox("Centro de Custo / Categoria", [
-                "Folha de Pagamento", "Infraestrutura e TI", "Impostos e Taxas", 
+                "Folha de Pagamento", "Banho e tosa", "Adestramento", 
                 "Marketing", "Vendas e Serviços", "Manutenção", "Outros"
             ])
             descricao = st.text_input("Descrição da Nota/Recibo")
