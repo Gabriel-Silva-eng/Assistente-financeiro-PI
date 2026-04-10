@@ -40,16 +40,6 @@ if st.session_state['usuario_logado'] is None:
             else:
                 st.error("⚠️ Usuário ou senha incorretos.")
 
-        # --- BOTÃO NUCLEAR TEMPORÁRIO ---
-        st.markdown("---")
-        if st.button("🚨 RESETAR BANCO DE DADOS DA NUVEM"):
-            import os
-            if os.path.exists('financas.db'):
-                os.remove('financas.db')
-                st.success("💥 Banco antigo destruído! Dê F5 na página para recriar o novo.")
-            else:
-                st.info("O banco já não existe mais aqui.")
-
 # --- 3. O SISTEMA (ESCRITÓRIO INTERNO) ---
 else:
     usuario_atual = st.session_state['usuario_logado']
