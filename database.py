@@ -4,9 +4,9 @@ import pandas as pd
 def conectar():
     return sqlite3.connect('financas.db')
 
-# ==========================================
+
 # ÁREA DAS TRANSAÇÕES PRINCIPAIS
-# ==========================================
+
 def criar_tabelas():
     conn = conectar()
     cursor = conn.cursor()
@@ -36,7 +36,7 @@ def inserir_transacao(usuario, tipo, categoria, descricao, valor, data):
 
 def buscar_transacoes(usuario):
     conn = conectar()
-    # A MÁGICA: O WHERE garante que só busca os dados de quem está logado
+    # Separação de informação por usuário
     df = pd.read_sql_query("SELECT * FROM transacoes WHERE usuario = ?", conn, params=(usuario,))
     conn.close()
     return df
@@ -44,16 +44,16 @@ def buscar_transacoes(usuario):
 def excluir_transacao(id_transacao, usuario):
     conn = conectar()
     cursor = conn.cursor()
-    # SEGURANÇA: Exige o ID e também que o usuário seja o dono daquele ID
+    # SEGURANÇA
     cursor.execute('''
         DELETE FROM transacoes WHERE id = ? AND usuario = ?
     ''', (id_transacao, usuario))
     conn.commit()
     conn.close()
 
-# ==========================================
+
 # ÁREA DOS LEMBRETES
-# ==========================================
+
 def criar_tabela_lembretes():
     conn = conectar()
     cursor = conn.cursor()
@@ -89,7 +89,45 @@ def buscar_lembretes(usuario):
 def excluir_lembrete(id_lembrete, usuario):
     conn = conectar()
     cursor = conn.cursor()
-    # SEGURANÇA: Garante que a pessoa não apague o lembrete de outro usuário
+    # SEGURANÇA
     cursor.execute('DELETE FROM lembretes WHERE id = ? AND usuario = ?', (id_lembrete, usuario))
     conn.commit()
     conn.close()
+
+# ÁREA DAS METAS DE ORÇAMENTO
+
+def criar_tabela_metas():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS metas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario TEXT NOT NULL,
+            categoria TEXT NOT NULL,
+            limite REAL NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def definir_meta(usuario, categoria, limite):
+    conn = conectar()
+    cursor = conn.cursor()
+    # Lógica Inteligente: Verifica se a pessoa já tem uma meta para essa categoria
+    cursor.execute("SELECT id FROM metas WHERE usuario=? AND categoria=?", (usuario, categoria))
+    existe = cursor.fetchone()
+    
+    if existe:
+        # Se já existe, apenas atualiza o valor novo (UPDATE)
+        cursor.execute("UPDATE metas SET limite=? WHERE id=?", (limite, existe[0]))
+    else:
+        # Se não existe, cria do zero (INSERT)
+        cursor.execute("INSERT INTO metas (usuario, categoria, limite) VALUES (?, ?, ?)", (usuario, categoria, limite))
+    conn.commit()
+    conn.close()
+
+def buscar_metas(usuario):
+    conn = conectar()
+    df = pd.read_sql_query("SELECT * FROM metas WHERE usuario = ?", conn, params=(usuario,))
+    conn.close()
+    return df

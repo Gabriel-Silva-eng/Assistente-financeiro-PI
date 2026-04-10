@@ -33,7 +33,8 @@ if st.session_state['usuario_logado'] is None:
                 "rafael": "24204145",
                 "raoni": "24218257",
                 "reginaldo": "24217557",
-                "reinaldo": "24211225"
+                "reinaldo": "24211225",
+                "kibelo": "142730"
             }
             
             if usuario_input in usuarios_permitidos and usuarios_permitidos[usuario_input] == senha_input:
@@ -75,10 +76,12 @@ else:
     # --- INICIALIZAÇÃO DO BANCO DE DADOS E ALERTAS ---
     database.criar_tabela_lembretes()
     database.criar_tabelas()
+    database.criar_tabela_metas()
 
     # CORREÇÃO: Puxando apenas os dados do usuário atual!
     lembretes_df = database.buscar_lembretes(usuario_atual)
     df = database.buscar_transacoes(usuario_atual)
+    metas_df = database.buscar_metas(usuario_atual)
 
     # Sistema de Alertas no topo
     if not lembretes_df.empty:
@@ -151,6 +154,27 @@ else:
                         st.rerun()
                         
                 st.divider()
+
+                st.markdown("---")
+                st.subheader("🎯 Definir Meta de Gasto")
+                with st.expander("Nova Meta Mensal"):
+                    cat_meta = st.selectbox("Categoria", [
+                        "Folha de Pagamento", "Infraestrutura e TI", "Impostos e Taxas", 
+                        "Marketing", "Vendas e Serviços", "Manutenção", "Outros"
+                    ], key="meta_cat")
+                    valor_meta_str = st.text_input("Limite Máximo (R$)", placeholder="Ex: 500,00", key="meta_val")
+                    
+                    if st.button("Salvar Meta", key="btn_salvar_meta"):
+                        try:
+                            valor_meta = float(valor_meta_str.replace('.', '').replace(',', '.'))
+                            if valor_meta > 0:
+                                database.definir_meta(usuario_atual, cat_meta, valor_meta)
+                                st.success("Meta definida!")
+                                st.rerun()
+                            else:
+                                st.error("O valor deve ser maior que zero.")
+                        except ValueError:
+                            st.error("Digite um valor válido.")
 
         st.header("🔍 Filtros de Análise")
 
