@@ -4,59 +4,63 @@ import pandas as pd
 def conectar():
     return sqlite3.connect('financas.db')
 
+# ==========================================
+# ÁREA DAS TRANSAÇÕES PRINCIPAIS
+# ==========================================
 def criar_tabelas():
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS transacoes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            tipo TEXT NOT NULL,         -- 'Receita' ou 'Despesa'
-            categoria TEXT NOT NULL,    -- Ex: 'Alimentação', 'Salário'
-            descricao TEXT,             -- Detalhes do gasto/ganho
-            valor REAL NOT NULL,        -- O valor em si
-            data DATE NOT NULL          -- Quando ocorreu
+            usuario TEXT NOT NULL,         -- NOVA COLUNA: Dono do registro
+            tipo TEXT NOT NULL,            -- 'Receita' ou 'Despesa'
+            categoria TEXT NOT NULL,
+            descricao TEXT,
+            valor REAL NOT NULL,
+            data DATE NOT NULL
         )
     ''')
     conn.commit()
     conn.close()
 
-def inserir_transacao(tipo, categoria, descricao, valor, data):
+def inserir_transacao(usuario, tipo, categoria, descricao, valor, data):
     conn = conectar()
     cursor = conn.cursor()
-    
     cursor.execute('''
-        INSERT INTO transacoes (tipo, categoria, descricao, valor, data)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (tipo, categoria, descricao, valor, data))
-    
+        INSERT INTO transacoes (usuario, tipo, categoria, descricao, valor, data) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (usuario, tipo, categoria, descricao, valor, data))
     conn.commit()
     conn.close()
 
-def buscar_transacoes():
+def buscar_transacoes(usuario):
     conn = conectar()
-    df = pd.read_sql_query("SELECT * FROM transacoes", conn)
+    # A MÁGICA: O WHERE garante que só busca os dados de quem está logado
+    df = pd.read_sql_query("SELECT * FROM transacoes WHERE usuario = ?", conn, params=(usuario,))
     conn.close()
     return df
 
-def excluir_transacao(id_transacao):
+def excluir_transacao(id_transacao, usuario):
     conn = conectar()
     cursor = conn.cursor()
-    
-
+    # SEGURANÇA: Exige o ID e também que o usuário seja o dono daquele ID
     cursor.execute('''
-        DELETE FROM transacoes WHERE id = ?
-    ''', (id_transacao,))
-    
+        DELETE FROM transacoes WHERE id = ? AND usuario = ?
+    ''', (id_transacao, usuario))
     conn.commit()
     conn.close()
 
-    
+# ==========================================
+# ÁREA DOS LEMBRETES
+# ==========================================
 def criar_tabela_lembretes():
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS lembretes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario TEXT NOT NULL,         -- NOVA COLUNA: Dono do lembrete
             titulo TEXT NOT NULL,
             valor REAL NOT NULL,
             data_vencimento DATE NOT NULL
@@ -65,23 +69,27 @@ def criar_tabela_lembretes():
     conn.commit()
     conn.close()
 
-def inserir_lembrete(titulo, valor, data):
+def inserir_lembrete(usuario, titulo, valor, data):
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO lembretes (titulo, valor, data_vencimento) VALUES (?, ?, ?)', (titulo, valor, data))
+    cursor.execute('''
+        INSERT INTO lembretes (usuario, titulo, valor, data_vencimento) 
+        VALUES (?, ?, ?, ?)
+    ''', (usuario, titulo, valor, data))
     conn.commit()
     conn.close()
 
-def buscar_lembretes():
-    import pandas as pd
+def buscar_lembretes(usuario):
     conn = conectar()
-    df = pd.read_sql_query("SELECT * FROM lembretes ORDER BY data_vencimento ASC", conn)
+    # Filtra por usuário e já entrega ordenado pela data
+    df = pd.read_sql_query("SELECT * FROM lembretes WHERE usuario = ? ORDER BY data_vencimento ASC", conn, params=(usuario,))
     conn.close()
     return df
 
-def excluir_lembrete(id_lembrete):
+def excluir_lembrete(id_lembrete, usuario):
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM lembretes WHERE id = ?', (id_lembrete,))
+    # SEGURANÇA: Garante que a pessoa não apague o lembrete de outro usuário
+    cursor.execute('DELETE FROM lembretes WHERE id = ? AND usuario = ?', (id_lembrete, usuario))
     conn.commit()
     conn.close()
