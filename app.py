@@ -36,7 +36,10 @@ if not lembretes_df.empty:
 
     # alertas
     for alerta in alertas:
-        st.error(alerta) if "🚨" in alerta else st.warning(alerta)
+        if "🚨" in alerta:
+            st.error(alerta)
+        else:
+            st.warning(alerta)
 
 database.criar_tabelas()
 
