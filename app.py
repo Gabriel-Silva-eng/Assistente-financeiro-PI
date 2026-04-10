@@ -69,7 +69,7 @@ with st.sidebar:
                 # Trava de segurança se o usuário digitar letras
                 st.error("Por favor, digite um valor financeiro válido.")
         data_l = st.date_input("Data Limite", datetime.now(fuso_br).date(), format="DD/MM/YYYY", key="input_data_limite_nova")
-        if st.button("Agendar"):
+        if st.button("Agendar", key="botao_agendar_lembrete"):
             database.inserir_lembrete(titulo_l, valor_l, data_l)
             st.success("Agendado!")
             st.rerun()
