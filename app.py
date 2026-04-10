@@ -65,62 +65,62 @@ if not lembretes_df.empty:
     st.markdown("**📌 Próximos Compromissos:**")
     
     for _, row in lembretes_df.iterrows():
-        # Arrumando a data para exibição (DD/MM/YYYY)
-        data_formatada = row['data_vencimento'].strftime('%d/%m/%Y')
-        
-        # Criando o layout do item (Texto | Botão Pago | Botão Excluir)
-        col_texto, col_pago, col_del = st.columns([0.65, 0.15, 0.20])
-        
-        with col_texto:
-            st.write(f"**{data_formatada}**\n{row['titulo']} (R$ {row['valor']:.2f})")
+            # Arrumando a data para exibição (DD/MM/YYYY)
+            data_formatada = row['data_vencimento'].strftime('%d/%m/%Y')
             
-        with col_pago:
-            # O parâmetro 'key' usa o ID do banco de dados para ser único
-            if st.button("✔️", key=f"pagar_{row['id']}", help="Marcar como Pago (Move para o Caixa)"):
-                # Insere na tabela oficial como Despesa (Ajuste se for Receita)
-                database.inserir_transacao('Despesa', 'Compromisso', row['titulo'], row['valor'], row['data_vencimento'])
-                # Remove da lista de lembretes
-                database.excluir_lembrete(row['id'])
-                st.rerun() # Atualiza a tela na hora
+            # Criando o layout do item (Texto | Botão Pago | Botão Excluir)
+            col_texto, col_pago, col_del = st.columns([0.65, 0.15, 0.20])
+            
+            with col_texto:
+                st.write(f"**{data_formatada}**\n{row['titulo']} (R$ {row['valor']:.2f})")
                 
-        with col_del:
-            if st.button("🗑️", key=f"del_{row['id']}", help="Excluir Lembrete"):
-                database.excluir_lembrete(row['id'])
-                st.rerun() # Atualiza a tela na hora
-                
-        st.divider() # Uma linha fina para separar cada lembrete  
+            with col_pago:
+                # O parâmetro 'key' usa o ID do banco de dados para ser único
+                if st.button("✔️", key=f"pagar_{row['id']}", help="Marcar como Pago (Move para o Caixa)"):
+                    # Insere na tabela oficial como Despesa (Ajuste se for Receita)
+                    database.inserir_transacao('Despesa', 'Compromisso', row['titulo'], row['valor'], row['data_vencimento'])
+                    # Remove da lista de lembretes
+                    database.excluir_lembrete(row['id'])
+                    st.rerun() # Atualiza a tela na hora
+                    
+            with col_del:
+                if st.button("🗑️", key=f"del_{row['id']}", help="Excluir Lembrete"):
+                    database.excluir_lembrete(row['id'])
+                    st.rerun() # Atualiza a tela na hora
+                    
+            st.divider() # Uma linha fina para separar cada lembrete  
 
     st.header("🔍 Filtros de Análise")
 
     if not df.empty:
-             
-        df['data'] = pd.to_datetime(df['data'])
+                
+            df['data'] = pd.to_datetime(df['data'])
+                
+            # Filtros Dinâmicos 
+            anos = df['data'].dt.year.unique().tolist()
+            ano_selecionado = st.selectbox("Filtrar por Ano", ["Todos os Anos"] + anos)
             
-        # Filtros Dinâmicos 
-        anos = df['data'].dt.year.unique().tolist()
-        ano_selecionado = st.selectbox("Filtrar por Ano", ["Todos os Anos"] + anos)
-        
-        meses = df['data'].dt.month.unique().tolist()
-        mes_selecionado = st.selectbox("Filtrar por Mês", ["Todos os Meses"] + meses)
-        
-        if ano_selecionado != "Todos os Anos":
-            df = df[df['data'].dt.year == ano_selecionado]
-        if mes_selecionado != "Todos os Meses":
-            df = df[df['data'].dt.month == mes_selecionado]
+            meses = df['data'].dt.month.unique().tolist()
+            mes_selecionado = st.selectbox("Filtrar por Mês", ["Todos os Meses"] + meses)
             
-        st.markdown("---")
-        st.subheader("📥 Exportação")
-        
-        # Transformando DataFrame em um arquivo para Excel
-        csv = df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="Baixar Relatório (CSV)",
-            data=csv,
-            file_name="relatorio_financeiro.csv",
-            mime="text/csv"
-        )
+            if ano_selecionado != "Todos os Anos":
+                df = df[df['data'].dt.year == ano_selecionado]
+            if mes_selecionado != "Todos os Meses":
+                df = df[df['data'].dt.month == mes_selecionado]
+                
+            st.markdown("---")
+            st.subheader("📥 Exportação")
+            
+            # Transformando DataFrame em um arquivo para Excel
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Baixar Relatório (CSV)",
+                data=csv,
+                file_name="relatorio_financeiro.csv",
+                mime="text/csv"
+            )
     else:
-        st.info("Banco de dados vazio.")
+            st.info("Banco de dados vazio.")
 
 # ==========================================
 # INTERFACE PRINCIPAL
