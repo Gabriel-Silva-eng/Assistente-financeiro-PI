@@ -61,36 +61,36 @@ with st.sidebar:
             st.rerun()
 
 # Listagem interativa de lembretes no menu lateral
-if not lembretes_df.empty:
-    st.markdown("**📌 Próximos Compromissos:**")
-    
-    for _, row in lembretes_df.iterrows():
-            # Arrumando a data para exibição (DD/MM/YYYY)
-            data_formatada = row['data_vencimento'].strftime('%d/%m/%Y')
-            
-            # Criando o layout do item (Texto | Botão Pago | Botão Excluir)
-            col_texto, col_pago, col_del = st.columns([0.65, 0.15, 0.20])
-            
-            with col_texto:
-                st.write(f"**{data_formatada}**\n{row['titulo']} (R$ {row['valor']:.2f})")
+    if not lembretes_df.empty:
+        st.markdown("**📌 Próximos Compromissos:**")
+        
+        for _, row in lembretes_df.iterrows():
+                # Arrumando a data para exibição (DD/MM/YYYY)
+                data_formatada = row['data_vencimento'].strftime('%d/%m/%Y')
                 
-            with col_pago:
-                # O parâmetro 'key' usa o ID do banco de dados para ser único
-                if st.button("✔️", key=f"pagar_{row['id']}", help="Marcar como Pago (Move para o Caixa)"):
-                    # Insere na tabela oficial como Despesa (Ajuste se for Receita)
-                    database.inserir_transacao('Despesa', 'Compromisso', row['titulo'], row['valor'], row['data_vencimento'])
-                    # Remove da lista de lembretes
-                    database.excluir_lembrete(row['id'])
-                    st.rerun() # Atualiza a tela na hora
+                # Criando o layout do item (Texto | Botão Pago | Botão Excluir)
+                col_texto, col_pago, col_del = st.columns([0.65, 0.15, 0.20])
+                
+                with col_texto:
+                    st.write(f"**{data_formatada}**\n{row['titulo']} (R$ {row['valor']:.2f})")
                     
-            with col_del:
-                if st.button("🗑️", key=f"del_{row['id']}", help="Excluir Lembrete"):
-                    database.excluir_lembrete(row['id'])
-                    st.rerun() # Atualiza a tela na hora
-                    
-            st.divider() # Uma linha fina para separar cada lembrete  
+                with col_pago:
+                    # O parâmetro 'key' usa o ID do banco de dados para ser único
+                    if st.button("✔️", key=f"pagar_{row['id']}", help="Marcar como Pago (Move para o Caixa)"):
+                        # Insere na tabela oficial como Despesa (Ajuste se for Receita)
+                        database.inserir_transacao('Despesa', 'Compromisso', row['titulo'], row['valor'], row['data_vencimento'])
+                        # Remove da lista de lembretes
+                        database.excluir_lembrete(row['id'])
+                        st.rerun() # Atualiza a tela na hora
+                        
+                with col_del:
+                    if st.button("🗑️", key=f"del_{row['id']}", help="Excluir Lembrete"):
+                        database.excluir_lembrete(row['id'])
+                        st.rerun() # Atualiza a tela na hora
+                        
+                st.divider() # Uma linha fina para separar cada lembrete  
 
-    st.header("🔍 Filtros de Análise")
+        st.header("🔍 Filtros de Análise")
 
     if not df.empty:
                 
