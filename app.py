@@ -93,9 +93,9 @@ if not lembretes_df.empty:
     st.header("🔍 Filtros de Análise")
 
     if not df.empty:
-
+             
         df['data'] = pd.to_datetime(df['data'])
-        
+            
         # Filtros Dinâmicos 
         anos = df['data'].dt.year.unique().tolist()
         ano_selecionado = st.selectbox("Filtrar por Ano", ["Todos os Anos"] + anos)
