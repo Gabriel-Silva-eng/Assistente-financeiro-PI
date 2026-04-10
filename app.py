@@ -137,7 +137,7 @@ with col1:
         ])
         descricao = st.text_input("Descrição da Nota/Recibo")
         valor_str = st.text_input("Valor (R$)", placeholder="Ex: 1.500,50")
-        data_transacao = st.date_input("Data de Competência", date.today())
+        data_competencia = st.date_input("Data de Competência", date.today(), format="DD/MM/YYYY")
         
         submit = st.form_submit_button("Salvar Registro")
         
