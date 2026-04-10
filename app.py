@@ -20,19 +20,19 @@ if st.session_state['usuario_logado'] is None:
     
     with st.container():
         # .lower() evita que o usuário erre a senha por causa de letra maiúscula
-        usuario_input = st.text_input("Nome de Usuário").lower() 
+        usuario_input = st.text_input("Nome de Usuário").strip().lower() 
         senha_input = st.text_input("Senha", type="password")
         
         if st.button("Entrar", key="btn_login"):
             # Dicionário de usuários provisório (No futuro, isso pode ir para o banco)
-            usuarios_permitidos = {"Gabriel": "admin123", "joao": "senha1"}
+            usuarios_permitidos = {"gabriel": "admin123", "joao": "senha1"}
             
             if usuario_input in usuarios_permitidos and usuarios_permitidos[usuario_input] == senha_input:
                 st.session_state['usuario_logado'] = usuario_input
                 st.rerun() # Destranca a porta e recarrega a página
             else:
                 st.error("⚠️ Usuário ou senha incorretos.")
-                
+
     # --- BOTÃO NUCLEAR TEMPORÁRIO ---
         st.markdown("---")
         if st.button("🚨 RESETAR BANCO DE DADOS DA NUVEM"):
