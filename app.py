@@ -24,8 +24,17 @@ if st.session_state['usuario_logado'] is None:
         senha_input = st.text_input("Senha", type="password")
         
         if st.button("Entrar", key="btn_login"):
-            # Dicionário de usuários provisório (No futuro, isso pode ir para o banco)
-            usuarios_permitidos = {"gabriel": "admin123", "joao": "senha1"}
+                # Dicionário de usuários e senhas da equipe
+            usuarios_permitidos = {
+                "gabriel": "admin123",
+                "gabriele": "24211510",
+                "lucas": "24219010",
+                "nelson": "24206410",
+                "rafael": "24204145",
+                "raoni": "24218257",
+                "reginaldo": "24217557",
+                "reinaldo": "24211225"
+            }
             
             if usuario_input in usuarios_permitidos and usuarios_permitidos[usuario_input] == senha_input:
                 st.session_state['usuario_logado'] = usuario_input
